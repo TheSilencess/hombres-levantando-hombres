@@ -1,0 +1,10 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {render,site} from '../.prerender/entry-server.js';
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const image=site.url+site.socialImage;
+const schema={'@context':'https://schema.org','@type':'Organization',name:site.name,description:site.description,url:site.url,logo:site.url+site.logo,...(site.socials.length?{sameAs:site.socials.map(s=>s.url)}:{})};
+const meta=`<title>${esc(site.title)}</title><meta name="description" content="${esc(site.description)}"/><link rel="canonical" href="${esc(site.url)}/"/><meta property="og:type" content="website"/><meta property="og:locale" content="es_GT"/><meta property="og:title" content="${esc(site.title)}"/><meta property="og:description" content="${esc(site.description)}"/><meta property="og:url" content="${esc(site.url)}/"/><meta property="og:image" content="${esc(image)}"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(site.title)}"/><meta name="twitter:description" content="${esc(site.description)}"/><meta name="twitter:image" content="${esc(image)}"/><script type="application/ld+json">${JSON.stringify(schema).replace(/</g,'\\u003c')}</script>`;
+const html=await readFile('dist/index.html','utf8');await writeFile('dist/index.html',html.replace('<!--seo-->',meta).replace('<!--app-->',render()));
+await writeFile('dist/robots.txt',`User-agent: *\nAllow: /\nSitemap: ${site.url}/sitemap.xml\n`);
+await writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${esc(site.url)}/</loc></url></urlset>`);
+console.log('Prerender completo: contenido, metadatos, Organization, robots y sitemap.');

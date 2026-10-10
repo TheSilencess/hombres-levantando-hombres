@@ -1,0 +1,10 @@
+import { useEffect,useRef,useState } from 'react';
+import { ArrowLeft,ArrowRight,Expand,X } from 'lucide-react';
+import { gallery } from '../../data/gallery';
+export function Gallery(){
+ const [index,setIndex]=useState<number|null>(null);const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{if(index!==null&&!dialog.current?.open)dialog.current?.showModal();},[index]);
+ function step(delta:number){setIndex(i=>i===null?null:(i+delta+gallery.length)%gallery.length);}
+ const photo=index===null?null:gallery[index];
+ return <section id="galeria" className="section gallery"><div className="section-heading"><div><p className="eyebrow">NUESTRA HERMANDAD</p><h2>Momentos que nos <em>unen.</em></h2></div><p>Cada reunión es una oportunidad para crecer juntos en la fe.</p></div><div className="gallery-grid">{gallery.map((p,i)=><button className="gallery-item" key={p.src} onClick={()=>setIndex(i)} aria-label={'Ampliar: '+p.title}><img src={p.src} alt={p.alt} width="900" height="700" loading="lazy" style={{objectPosition:p.position}}/><span className="gallery-label"><span>{p.title}<small>{p.illustrative?'Imagen ilustrativa · no es una foto del grupo':''}</small></span><Expand size={20}/></span></button>)}</div><p className="gallery-note">Las fotografías auténticas del ministerio se incorporarán próximamente. Estas imágenes son demostrativas.</p><dialog ref={dialog} className="lightbox" onClose={()=>setIndex(null)} onClick={e=>{if(e.target===dialog.current)dialog.current.close();}} onKeyDown={e=>{if(e.key==='ArrowRight')step(1);if(e.key==='ArrowLeft')step(-1);}} aria-label="Galería ampliada"><button className="close-dialog icon-button" aria-label="Cerrar imagen" onClick={()=>dialog.current?.close()}><X/></button>{photo&&<><img src={photo.src} alt={photo.alt}/><div className="lightbox-caption"><button className="icon-button" aria-label="Imagen anterior" onClick={()=>step(-1)}><ArrowLeft/></button><p>{photo.title}<small>{photo.illustrative?'Imagen ilustrativa':''}</small></p><button className="icon-button" aria-label="Imagen siguiente" onClick={()=>step(1)}><ArrowRight/></button></div></>}</dialog></section>;
+}
